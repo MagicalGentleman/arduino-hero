@@ -22,7 +22,7 @@ const int strumU=10;
 int velocity=127;
 byte noteMem[3]={0,0,0};
 
-//GREEN,RED,YELLOW,BLUE,ORANGE,STRUM,UP/SELECT,DOWN/START,CHORD//
+//GREEN,RED,YELLOW,BLUE,ORANGE,STRUM,(UP/SELECT),(DOWN/START),CHORD//
 boolean g,r,y,b,o,s,u,d,c;
 boolean g1,r1,y1,b1,o1,s1,u1,d1;
 boolean g2,r2,y2,b2,o2,s2,u2,d2;
@@ -63,7 +63,7 @@ void loop() {
   int w=0;
   int wham=analogRead(whammy);
   
-  if((mils-timer)>=5){
+  if((mils-timer)>=8){
     tick*=(-1);
     if(tick>0) checkInput1(); // input trackers
     else checkInput2();
@@ -109,9 +109,9 @@ void checkKeyLocks() {
       if(!c) play(0,0,velocity); //otherwise hammer-on with reduced velocity
       else if(c) chord(sD);
     }
-    else if(c){
-      drop=true;
-      play(0,0,(velocity/2));
+    else{
+      if(c) drop=true;
+      play(0,0,int(velocity/2));
     }
   }
   return;

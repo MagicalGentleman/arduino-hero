@@ -37,5 +37,6 @@ void killNote() { // cuts off all notes and sets 'silent' to 'true'
   }
   else MIDI.sendNoteOff(noteMem[0],64,MIDIOUT);
   silent=true;
+  velocity=0;
   return;
 }
