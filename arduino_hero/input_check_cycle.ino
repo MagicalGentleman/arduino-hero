@@ -19,7 +19,7 @@ void checkInput1() {
     s=s1=true;
     sD=false;
   }
-  //else if(digitalRead(strumU)==LOW) sD=s=s1=true;
+  else if(digitalRead(strumU)==LOW) sD=s=s1=true;
   else s=s1=false;
   return;
 }
@@ -45,7 +45,7 @@ void checkInput2() {
     s=s2=true;
     sD=false;
   }
-  //else if(digitalRead(strumU)==LOW) sD=s=s2=true;
+  else if(digitalRead(strumU)==LOW) sD=s=s2=true;
   else s=s2=false;
   return;
 }
