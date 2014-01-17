@@ -34,9 +34,8 @@ boolean silent=true;
 
 boolean skip=false;
 
-byte octave=3;
+byte octave=4;
 int tick=1;
-unsigned long timer;
 
 void setup() {
   MIDI.begin();
@@ -55,22 +54,16 @@ void setup() {
   g2=r2=y2=b2=o2=false;
   s1=u1=d1=false;
   s2=u2=d2=false;
-  timer=millis();
 }
 
 void loop() {
   unsigned long mils=millis();
   int w=0;
   int wham=analogRead(whammy);
-  
-  if((mils-timer)>=8){
-    tick*=(-1);
-    if(tick>0) checkInput1(); // input trackers
-    else checkInput2();
-    checkKeyLocks(); // Most of the work is done here.
-    timer=mils;
-  }
-  
+  tick*=(-1);
+  if(tick>0) checkInput1(); // input trackers
+  else checkInput2();
+  checkKeyLocks(); // Most of the work is done here.
   if((!silent)&&wham&&(wham<=420)){
     w=map(analogRead(whammy), 0, 420, -4096, 0);
     MIDI.sendPitchBend(w,MIDIOUT);
@@ -104,7 +97,7 @@ void checkKeyLocks() {
   else if((g2!=g1)||(r2!=r1)||(y2!=y1)||(b2!=b1)||(o2!=o1)) if(!silent){ // have the frets changed?
     if(!s) killNote(); //if frets change and strum isn't depressed, kill the note.
     else if(!((!g)&&(!r)&&(!y)&&(!b)&&(!o))){
-      velocity-=2;
+      velocity-=1;
       if(velocity<0) velocity=0;
       if(!c) play(0,0,velocity); //otherwise hammer-on with reduced velocity
       else if(c) chord(sD);
