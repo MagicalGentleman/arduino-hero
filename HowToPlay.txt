@@ -1,4 +1,17 @@
-here's a table of all the fret combinations:
+press SELECT to increase your base octave
+press START to decrease your base octave
+
+hold and release START+SELECT to toggle between note and chord mode.
+In chord mode {
+    strumming up will play a minor chord
+    strumming down will play a major chord
+}
+
+you can do hammer-ons while holding down the strum bar down.
+While hammering on, your base C will play softly whenever you lift all your fingers off. (half velocity of current note) This simulates what would happen if you released your hands from the frets in a sustained note, or halfway between scaling.
+
+
+Here's a table of all the fret combinations:
 
 +-----+-----+-----+-----+
 |     | oct |oct+1|oct+2|
