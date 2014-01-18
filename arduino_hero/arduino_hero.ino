@@ -62,15 +62,15 @@ void loop() {
   unsigned long mils=millis();
   int w=0;
   int wham=analogRead(whammy);
-  if((mils-timer)>=1) {
+  if((mils-timer)>0) {
     tick*=(-1);
     if(tick>0) checkInput1(); // input trackers
     else checkInput2();
     checkKeyLocks(); // Most of the work is done here.
     timer=mils;
   }
-  if((!silent)&&wham&&(wham<=420)){
-    w=map(analogRead(whammy), 0, 420, -4096, 0);
+  if(wham&&(wham<=400)){
+    w=map(analogRead(whammy), 0, 400, -8000, 0);
     MIDI.sendPitchBend(w,MIDIOUT);
   }
 }

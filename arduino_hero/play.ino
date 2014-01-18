@@ -9,6 +9,9 @@ void chord(boolean mode) {
     play(2,1,velocity);
     play(5,2,velocity);
   }
+  /*
+  
+  */
   return;
 }
 
