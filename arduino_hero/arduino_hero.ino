@@ -36,6 +36,7 @@ boolean skip=false;
 
 byte octave=4;
 int tick=1;
+long int timer;
 
 void setup() {
   MIDI.begin();
@@ -54,16 +55,20 @@ void setup() {
   g2=r2=y2=b2=o2=false;
   s1=u1=d1=false;
   s2=u2=d2=false;
+  timer=millis();
 }
 
 void loop() {
   unsigned long mils=millis();
   int w=0;
   int wham=analogRead(whammy);
-  tick*=(-1);
-  if(tick>0) checkInput1(); // input trackers
-  else checkInput2();
-  checkKeyLocks(); // Most of the work is done here.
+  if((mils-timer)>=1) {
+    tick*=(-1);
+    if(tick>0) checkInput1(); // input trackers
+    else checkInput2();
+    checkKeyLocks(); // Most of the work is done here.
+    timer=mils;
+  }
   if((!silent)&&wham&&(wham<=420)){
     w=map(analogRead(whammy), 0, 420, -4096, 0);
     MIDI.sendPitchBend(w,MIDIOUT);
