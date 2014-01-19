@@ -40,40 +40,23 @@
 
 <p>intercepts the button presses and the potentiometer. You can then send the signal </p>
 
-<p>through the arduino's usb (via serial to midi program. I recommend Hairless and </p>
+<p>through the arduino's usb via serial to midi program (I recommend Hairless and </p>
 
-<p>loopMIDI), or through an installed midi port. (WARNING I have only tested on my </p>
+<p>loopMIDI), or through an installed midi port. 
+Please note that I have only tested on my computer. If it isn't working, the baud rate may need to be changed to work with a midi port.</p>
 
-<p>computer. If it isn't working, the baud rate may need to be changed to work with </p>
+<p>Can play in a range of 32 notes (just under 3 octaves) through increasingly intense fret progressions. In general, the more fret buttons held down, the higher the note. </p>
 
-<p>a midi port.)</p>
+<p>The code is (hopefully) straightforward enough for you to change things if you like. Check out the howtoplay file for the chord map, or check out <a href="http://chipmusic.org/forums/topic/13205/guitar-hero-vanilla-midi-controller-32-note-range/">this thread</a>.</p>
 
-<p>Can play in a range of 2 2/3 octaves (32 notes) through increasingly intense fret </p>
+<p>Supported features:</p>
 
-<p>progressions. In general, the more fret buttons held down, the higher the note. </p>
-
-<p>There's no option toggling or anything fancy, so you play it just like you would </p>
-
-<p>in the video game.</p>
-
-<p>The code is commented well enough for you to change things if you like. reading </p>
-
-<p>the comments in fret_map.ino will give you an idea of how to use the frets.</p>
-
-<p>that said:
-pressing start+select will toggle between chords and single notes.
-in chord mode, strum down for a major chord and up for a minor chord.</p>
-
-<p>you can hammer-on when you keep the strum bar pressed down.</p>
-
-<p>whammy bar sends a pitchbend signal</p>
-
-<p>to increase/decrease the base octave you play at, press select to go up, and </p>
-
-<p>start to go down.</p>
-
-<p><a href="http://projectgus.github.io/hairless-midiserial/">http://projectgus.github.io/hairless-midiserial/</a>
-<a href="http://www.tobias-erichsen.de/software/loopmidi.html">http://www.tobias-erichsen.de/software/loopmidi.html</a></p>
+<ul>
+<li>Whammy bar</li>
+<li>Chord mode (major/minor)</li>
+<li>Tuning up/down your base octave</li>
+</ul><p><a href="projectgus.github.io">Hairless Serial to MIDI</a>
+<a href="http://www.tobias-erichsen.de/software/loopmidi.html">LoopMIDI internal MIDI driver</a></p>
       </section>
     </div>
 
