@@ -1,1 +1,0 @@
-arduino-hero considers a pressed button as LOW. If the program isn't working for you, try replacing all the LOW values with HIGH in the source code. They should be in input_check_cycle.ino
