@@ -1,3 +1,0 @@
-input_check_cycle is quite primitive, I need to redo that to make myself feel better.
-It would also make any big changes to the code MUCH easier and unclutter the variable list.
-also need to cut down on the amount of variables i'm using. bleh.

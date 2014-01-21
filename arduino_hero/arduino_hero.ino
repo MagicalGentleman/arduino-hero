@@ -1,11 +1,25 @@
 #include <MIDI.h>
 
+// the 'd' (DOWN) and 'u' (UP) variables refer to the start and select buttons.
+
+// edit these defines to customize your guitar's capabilities!
 #define MIDIOUT 1
-#define INIT_OCTAVE 4
 // where the octave MUST be between 0 and 10:
-#define MAX_OCTAVE 8
+#define INIT_OCTAVE 4
 #define MIN_OCTAVE 3
+#define MAX_OCTAVE 8
 // dmg gameboy has normal range of 3 to 8
+
+// DON'T CHANGE THESE DEFINES!-----------------
+#define GREEN g[0]
+#define RED r[0]
+#define YELLOW y[0]
+#define BLUE b[0]
+#define ORANGE o[0]
+#define STRUM s[0]
+#define DOWN d[0]
+#define UP u[0]
+// --------------------------------------------
 
 // pins
 const int whammy=A0;
@@ -23,9 +37,8 @@ int velocity=127;
 byte noteMem[3]={0,0,0};
 
 //GREEN,RED,YELLOW,BLUE,ORANGE,STRUM,(UP/SELECT),(DOWN/START),CHORD//
-boolean g,r,y,b,o,s,u,d,c;
-boolean g1,r1,y1,b1,o1,s1,u1,d1;
-boolean g2,r2,y2,b2,o2,s2,u2,d2;
+boolean g[3],r[3],y[3],b[3],o[3],s[3],u[3],d[3];
+boolean c;
 
 boolean sD; // Strum direction. up=true, down=false.
 boolean cLift=false;
@@ -50,11 +63,7 @@ void setup() {
   pinMode(strumU, INPUT);
   pinMode(start, INPUT);
   pinMode(select, INPUT);
-  g=r=y=b=o=false;
-  g1=r1=y1=b1=o1=false;
-  g2=r2=y2=b2=o2=false;
-  s1=u1=d1=false;
-  s2=u2=d2=false;
+  for(int i=0; i<3; i++) g[i]=r[i]=y[i]=b[i]=o[i]=u[i]=d[i]=s[i]=false;
   timer=millis();
 }
 
@@ -64,8 +73,7 @@ void loop() {
   int wham=analogRead(whammy);
   if((mils-timer)>0) {
     tick*=(-1);
-    if(tick>0) checkInput1(); // input trackers
-    else checkInput2();
+    checkInput(); // input tracker
     checkKeyLocks(); // Most of the work is done here.
     timer=mils;
   }
@@ -76,8 +84,8 @@ void loop() {
 }
 
 void checkKeyLocks() {
-  if((u2!=u1)&&(!u)){       //the instant select is lifted
-    if(d){                  //if start is held down
+  if((u[2]!=u[1])&&(!UP)){       //the instant select is lifted
+    if(DOWN){                  //if start is held down
       c=(!c);               // toggle chord mode
       if(!c) cLift=true;
       skip=true;
@@ -85,8 +93,8 @@ void checkKeyLocks() {
     else if(skip) skip=false;
     else if(octave<(MAX_OCTAVE-1)) octave++;
   }
-  else if((d2!=d1)&&(!d)){  //the instant start is lifted
-    if(u){                  //if select is held down
+  else if((d[2]!=d[1])&&(!DOWN)){  //the instant start is lifted
+    if(UP){                  //if select is held down
       c=(!c);               // toggle chord mode
       if(!c) cLift=true;
       skip=true;
@@ -94,14 +102,14 @@ void checkKeyLocks() {
     else if(skip) skip=false;
     else if(octave>MIN_OCTAVE) octave--;
   }
-  else if((s1!=s2)&&s){ // check for strum
+  else if((s[1]!=s[2])&&STRUM){ // check for strum
     velocity=127;
     if(!c) play(0,0,velocity); //new note
     else if(c) chord(sD);
   }
-  else if((g2!=g1)||(r2!=r1)||(y2!=y1)||(b2!=b1)||(o2!=o1)) if(!silent){ // have the frets changed?
-    if(!s) killNote(); //if frets change and strum isn't depressed, kill the note.
-    else if(!((!g)&&(!r)&&(!y)&&(!b)&&(!o))){
+  else if((g[2]!=g[1])||(r[2]!=r[1])||(y[2]!=y[1])||(b[2]!=b[1])||(o[2]!=o[1])) if(!silent){ // have the frets changed?
+    if(!STRUM) killNote(); //if frets change and strum isn't depressed, kill the note.
+    else if(!((!GREEN)&&(!RED)&&(!YELLOW)&&(!BLUE)&&(!ORANGE))){
       velocity-=1;
       if(velocity<0) velocity=0;
       if(!c) play(0,0,velocity); //otherwise hammer-on with reduced velocity

@@ -25,7 +25,7 @@ void play(byte offset, int count, int vel) {
     }
     else MIDI.sendNoteOn(noteMem[count],0,MIDIOUT);
   }
-  j=(offset+(frets(g,r,y,b,o,octave)));
+  j=(offset+(frets(GREEN,RED,YELLOW,BLUE,ORANGE,octave)));
   MIDI.sendNoteOn(j,vel,MIDIOUT);
   noteMem[count]=j;
   if(!vel) silent=true;

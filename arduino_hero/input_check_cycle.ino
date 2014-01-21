@@ -1,51 +1,28 @@
-void checkInput1() {
-  if(digitalRead(green)==LOW) g=g1=true;
-  else g=g1=false;
-  if(digitalRead(red)==LOW) r=r1=true;
-  else r=r1=false;
-  if(digitalRead(yellow)==LOW) y=y1=true;
-  else y=y1=false;
-  if(digitalRead(blue)==LOW) b=b1=true;
-  else b=b1=false;
-  if(digitalRead(orange)==LOW) o=o1=true;
-  else o=o1=false;
+void checkInput() {
+  int x;
+  if(tick>0) x=1;
+  else x=2;
+  if(digitalRead(green)==LOW) g[0]=g[x]=true;
+  else g[0]=g[x]=false;
+  if(digitalRead(red)==LOW) r[0]=r[x]=true;
+  else r[0]=r[x]=false;
+  if(digitalRead(yellow)==LOW) y[0]=y[x]=true;
+  else y[0]=y[x]=false;
+  if(digitalRead(blue)==LOW) b[0]=b[x]=true;
+  else b[0]=b[x]=false;
+  if(digitalRead(orange)==LOW) o[0]=o[x]=true;
+  else o[0]=o[x]=false;
   
-  if(digitalRead(select)==LOW) u=u1=true;
-  else u=u1=false;
-  if(digitalRead(start)==LOW) d=d1=true;
-  else d=d1=false;
-  
-  if(digitalRead(strumD)==LOW) {
-    s=s1=true;
-    sD=false;
-  }
-  else if(digitalRead(strumU)==LOW) sD=s=s1=true;
-  else s=s1=false;
-  return;
-}
-
-void checkInput2() {
-  if(digitalRead(green)==LOW) g=g2=true;
-  else g=g2=false;
-  if(digitalRead(red)==LOW) r=r2=true;
-  else r=r2=false;
-  if(digitalRead(yellow)==LOW) y=y2=true;
-  else y=y2=false;
-  if(digitalRead(blue)==LOW) b=b2=true;
-  else b=b2=false;
-  if(digitalRead(orange)==LOW) o=o2=true;
-  else o=o2=false;
-  
-  if(digitalRead(select)==LOW) u=u2=true;
-  else u=u2=false;
-  if(digitalRead(start)==LOW) d=d2=true;
-  else d=d2=false;
+  if(digitalRead(select)==LOW) u[0]=u[x]=true;
+  else u[0]=u[x]=false;
+  if(digitalRead(start)==LOW) d[0]=d[x]=true;
+  else d[0]=d[x]=false;
   
   if(digitalRead(strumD)==LOW) {
-    s=s2=true;
+    s[0]=s[x]=true;
     sD=false;
   }
-  else if(digitalRead(strumU)==LOW) sD=s=s2=true;
-  else s=s2=false;
+  else if(digitalRead(strumU)==LOW) sD=s[0]=s[x]=true;
+  else s[0]=s[x]=false;
   return;
 }
