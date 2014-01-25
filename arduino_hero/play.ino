@@ -27,6 +27,7 @@ void play(byte offset, int count, int vel) {
   }
   j=(offset+(frets(GREEN,RED,YELLOW,BLUE,ORANGE,octave)));
   MIDI.sendNoteOn(j,vel,MIDIOUT);
+  
   noteMem[count]=j;
   if(!vel) silent=true;
   else silent=false;
@@ -43,3 +44,8 @@ void killNote() { // cuts off all notes and sets 'silent' to 'true'
   velocity=0;
   return;
 }
+
+byte pitch(byte pit, byte oct){
+  return (pit+(oct*12));
+}
+

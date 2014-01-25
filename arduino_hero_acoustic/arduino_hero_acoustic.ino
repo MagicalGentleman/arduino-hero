@@ -1,20 +1,16 @@
-#include <MIDI.h>
+#include <SquareSynt.h>
 
 // the 'd' (DOWN) and 'u' (UP) variables refer to the start and select buttons.
 
+// WHAMMY BAR COMING SOON
+// I have to finish SquareSynth first.
+
 // edit these defines to customize your guitar's capabilities!
-#define MIDIOUT 1
 // where the octave MUST be between 0 and 10:
 #define INIT_OCTAVE 4
-#define MIN_OCTAVE 3
-#define MAX_OCTAVE 8
-// dmg gameboy has normal range of 3 to 8
-
-// change your pot values here:
-#define POT_MAX 400
-#define POT_MIN 0
-#define WHAM_MAX -4000
-// -------------------------------
+#define MIN_OCTAVE 2
+#define MAX_OCTAVE 7
+// so far, stable range of 2 to 7
 
 // DON'T CHANGE THESE DEFINES!-----------------
 #define GREEN g[0]
@@ -28,7 +24,6 @@
 // --------------------------------------------
 
 // pins
-const int whammy=A0;
 const int green=2;
 const int red=3;
 const int yellow=4;
@@ -39,7 +34,7 @@ const int select=8;
 const int strumD=9;
 const int strumU=10;
 
-int velocity=127;
+int duty;
 byte noteMem[3]={0,0,0};
 unsigned long midi[127];
 
@@ -56,12 +51,15 @@ boolean skip=false;
 
 byte octave=4;
 int tick=1;
-long int timer;
-unsigned long waveTimer;
+unsigned long timer;
+unsigned long mils;
+unsigned long trigger=0;
+unsigned long triggerTimer;
+unsigned long triggerReference;
 
 void setup() {
-  MIDI.begin();
-  Serial.begin(115200); // for usb serial to midi on computer. (use program 'hairless')
+  Synth.begin(11);
+  pinMode(11, OUTPUT);
   pinMode(green, INPUT);
   pinMode(red, INPUT);
   pinMode(yellow, INPUT);
@@ -72,25 +70,21 @@ void setup() {
   pinMode(start, INPUT);
   pinMode(select, INPUT);
   for(int i=0; i<3; i++) g[i]=r[i]=y[i]=b[i]=o[i]=u[i]=d[i]=s[i]=false;
-  for (int x=0; x<127; ++x) midi[x]=((1/((440/32)*(2^((x-9)/12))))*1000000); // MIDI to wavelength in microseconds
   timer=millis();
-  waveTimer=micros();
+  triggerTimer=millis();
+  triggerReference=millis();
 }
 
 void loop() {
-  unsigned long mils=millis();
-  int w=0;
-  int wham=analogRead(whammy);
-  if((mils-timer)>0) {
+  mils=millis();
+  if((mils-timer)>5) {
     tick*=(-1);
     checkInput(); // input tracker
     checkKeyLocks(); // Most of the work is done here.
+    addDepth(); // changes duty cycle over time for some depth
     timer=mils;
   }
-  if(wham&&(wham<=400)){
-    w=map(analogRead(whammy), POT_MIN, POT_MAX, WHAM_MAX, 0);
-    MIDI.sendPitchBend(w,MIDIOUT);
-  }
+  Synth.generate();
 }
 
 void checkKeyLocks() {
@@ -113,21 +107,17 @@ void checkKeyLocks() {
     else if(octave>MIN_OCTAVE) octave--;
   }
   else if((s[1]!=s[2])&&STRUM){ // check for strum
-    velocity=127;
-    if(!c) play(0,0,velocity); //new note
+    if(!c) play(); //new note
     else if(c) chord(sD);
   }
   else if((g[2]!=g[1])||(r[2]!=r[1])||(y[2]!=y[1])||(b[2]!=b[1])||(o[2]!=o[1])) if(!silent){ // have the frets changed?
     if(!STRUM) killNote(); //if frets change and strum isn't depressed, kill the note.
     else if(!((!GREEN)&&(!RED)&&(!YELLOW)&&(!BLUE)&&(!ORANGE))){
-      velocity-=1;
-      if(velocity<0) velocity=0;
-      if(!c) play(0,0,velocity); //otherwise hammer-on with reduced velocity
+      if(!c) play(); // hammer-on!
       else if(c) chord(sD);
     }
     else{
-      if(c) drop=true;
-      play(0,0,int(velocity/2));
+      play(); // keep this here if you want pullups to go with your hammer-ons
     }
   }
   return;
