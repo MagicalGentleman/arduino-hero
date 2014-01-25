@@ -41,7 +41,6 @@ const int strumU=10;
 
 int velocity=127;
 byte noteMem[3]={0,0,0};
-unsigned long midi[127];
 
 //GREEN,RED,YELLOW,BLUE,ORANGE,STRUM,(UP/SELECT),(DOWN/START),CHORD//
 boolean g[3],r[3],y[3],b[3],o[3],s[3],u[3],d[3];
@@ -57,7 +56,6 @@ boolean skip=false;
 byte octave=4;
 int tick=1;
 long int timer;
-unsigned long waveTimer;
 
 void setup() {
   MIDI.begin();
@@ -72,9 +70,7 @@ void setup() {
   pinMode(start, INPUT);
   pinMode(select, INPUT);
   for(int i=0; i<3; i++) g[i]=r[i]=y[i]=b[i]=o[i]=u[i]=d[i]=s[i]=false;
-  for (int x=0; x<127; ++x) midi[x]=((1/((440/32)*(2^((x-9)/12))))*1000000); // MIDI to wavelength in microseconds
   timer=millis();
-  waveTimer=micros();
 }
 
 void loop() {
