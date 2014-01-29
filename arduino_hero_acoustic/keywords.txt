@@ -1,0 +1,15 @@
+Synth_Class	KEYWORD1
+SquareSynth_Class	KEYWORD1
+SquareSynth	KEYWORD1
+Synth	KEYWORD1
+Channel	KEYWORD1
+tempo	KEYWORD2
+begin	KEYWORD2
+generate	KEYWORD2
+noteOn	KEYWORD2
+noteOff	KEYWORD2
+pitchBend	KEYWORD2
+arpeggioOn	KEYWORD2
+arpeggioOff	KEYWORD2
+dutyCycle	KEYWORD2
+noise	KEYWORD2

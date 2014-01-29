@@ -116,7 +116,7 @@ void checkKeyLocks() {
   else if((g[2]!=g[1])||(r[2]!=r[1])||(y[2]!=y[1])||(b[2]!=b[1])||(o[2]!=o[1])) if(!silent){ // have the frets changed?
     if(!STRUM) killNote(); //if frets change and strum isn't depressed, kill the note.
     else if(!((!GREEN)&&(!RED)&&(!YELLOW)&&(!BLUE)&&(!ORANGE))){
-      velocity-=1;
+      velocity-=1; // comment this line out to remove velocity reduction during hammer-ons
       if(velocity<0) velocity=0;
       if(!c) play(0,0,velocity); //otherwise hammer-on with reduced velocity
       else if(c) chord(sD);

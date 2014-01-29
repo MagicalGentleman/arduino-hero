@@ -1,4 +1,4 @@
-#include <SquareSynt.h>
+#include "Squaresynth.h"
 
 // the 'd' (DOWN) and 'u' (UP) variables refer to the start and select buttons.
 
@@ -9,8 +9,8 @@
 // where the octave MUST be between 0 and 10:
 #define INIT_OCTAVE 4
 #define MIN_OCTAVE 2
-#define MAX_OCTAVE 7
-// so far, stable range of 2 to 7
+#define MAX_OCTAVE 6
+// so far, stable range of 2 to 6 (and 2/3)
 
 // DON'T CHANGE THESE DEFINES!-----------------
 #define GREEN g[0]
@@ -54,7 +54,6 @@ int tick=1;
 unsigned long timer;
 unsigned long mils;
 unsigned long trigger=0;
-unsigned long triggerTimer;
 unsigned long triggerReference;
 
 void setup() {
@@ -71,7 +70,6 @@ void setup() {
   pinMode(select, INPUT);
   for(int i=0; i<3; i++) g[i]=r[i]=y[i]=b[i]=o[i]=u[i]=d[i]=s[i]=false;
   timer=millis();
-  triggerTimer=millis();
   triggerReference=millis();
 }
 
@@ -86,6 +84,8 @@ void loop() {
   }
   Synth.generate();
 }
+
+//---------------------------------------------------------------
 
 void checkKeyLocks() {
   if((u[2]!=u[1])&&(!UP)){       //the instant select is lifted
