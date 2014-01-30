@@ -1,4 +1,4 @@
-#include "Squaresynth.h"
+#include "SquareSynth.h"
 
 // the 'd' (DOWN) and 'u' (UP) variables refer to the start and select buttons.
 
@@ -6,11 +6,14 @@
 // I have to finish SquareSynth first.
 
 // edit these defines to customize your guitar's capabilities!
+
 // where the octave MUST be between 0 and 10:
 #define INIT_OCTAVE 4
-#define MIN_OCTAVE 2
+#define MIN_OCTAVE 3
 #define MAX_OCTAVE 6
-// so far, stable range of 2 to 6 (and 2/3)
+// usable range of 3 to 6 (plus 2/3)
+
+#define DEFAULT_DUTY_CYCLE 40 // Sets the duty cycle you play your notes at.
 
 // DON'T CHANGE THESE DEFINES!-----------------
 #define GREEN g[0]
@@ -24,6 +27,7 @@
 // --------------------------------------------
 
 // pins
+const int whammy=A0;
 const int green=2;
 const int red=3;
 const int yellow=4;
@@ -35,8 +39,6 @@ const int strumD=9;
 const int strumU=10;
 
 int duty;
-byte noteMem[3]={0,0,0};
-unsigned long midi[127];
 
 //GREEN,RED,YELLOW,BLUE,ORANGE,STRUM,(UP/SELECT),(DOWN/START),CHORD//
 boolean g[3],r[3],y[3],b[3],o[3],s[3],u[3],d[3];
@@ -53,12 +55,9 @@ byte octave=4;
 int tick=1;
 unsigned long timer;
 unsigned long mils;
-unsigned long trigger=0;
-unsigned long triggerReference;
 
 void setup() {
-  Synth.begin(11);
-  pinMode(11, OUTPUT);
+  Synth.begin(11); // SquareSynth declares the pin output for you.
   pinMode(green, INPUT);
   pinMode(red, INPUT);
   pinMode(yellow, INPUT);
@@ -70,16 +69,15 @@ void setup() {
   pinMode(select, INPUT);
   for(int i=0; i<3; i++) g[i]=r[i]=y[i]=b[i]=o[i]=u[i]=d[i]=s[i]=false;
   timer=millis();
-  triggerReference=millis();
 }
 
 void loop() {
   mils=millis();
-  if((mils-timer)>5) {
+  if((mils-timer)>2) {
     tick*=(-1);
     checkInput(); // input tracker
     checkKeyLocks(); // Most of the work is done here.
-    addDepth(); // changes duty cycle over time for some depth
+    //whammyCheck(); // Runs a check on the whammy bar.
     timer=mils;
   }
   Synth.generate();
@@ -120,5 +118,12 @@ void checkKeyLocks() {
       play(); // keep this here if you want pullups to go with your hammer-ons
     }
   }
+  return;
+}
+
+void whammyCheck(){
+  int wham=constrain(analogRead(whammy),19,401);
+  if(wham>400 || wham<20) return;
+  else Synth.pitchBend(map(wham,20,400,-1000,0));
   return;
 }

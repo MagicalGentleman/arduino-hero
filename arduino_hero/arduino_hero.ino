@@ -84,7 +84,7 @@ void loop() {
     timer=mils;
   }
   if(wham&&(wham<=400)){
-    w=map(analogRead(whammy), POT_MIN, POT_MAX, WHAM_MAX, 0);
+    w=map(wham, POT_MIN, POT_MAX, WHAM_MAX, 0);
     MIDI.sendPitchBend(w,MIDIOUT);
   }
 }
