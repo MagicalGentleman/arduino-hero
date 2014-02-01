@@ -27,21 +27,23 @@ class SquareSynth_Class {
     ~SquareSynth_Class();
     void begin(int synths, ...); // initialise as many synth channels as you want here! (they appear in the Channel[] array)
     void tempo(int bpm); // set a new bpm at any time with this function.
+    
     // timing chunks:
     // use these for timing your notes. apply instructions, then use
     // one of these to specify the amount of beats before your
     // next instruction.
-    void proceed(int modifier=1); // the argument here is the amount of sixteenth notes you want the function to run for.
+    void proceed(int modifier=1); // the argument here is the amount of 32nd notes you want the function to run for.
     void sixteenth(); // sixteenth is the same as proceed with no arguments.
     void eighth();
     void quarter();
     void half();
     void whole(); // this is all pretty straightforward.
     // end of timing chunks.
-    void generate(); // acts the same as Synth/Channel[]'s generate, but calls all instances. Use this over the timing blocks for HID sketches.
+    
+    void generate(); // acts the same as Synth/Channel[]'s generate, but calls all instances. Use this over the timing blocks for HID sketches. Or MIDI interfacing.
   private:
     int _synthCount;
-    int _tempo; // tempo in millis per 16th note
+    unsigned long _tempo; // tempo in micros per 32nd note
 };
 
     ////////////////////////////////////////////////
@@ -67,14 +69,19 @@ class Synth_Class {
     void dutyCycle(int percent);
     void noise(int pitch=60, int minDuty=1, int maxDuty=51);
     void noteOff();
+    void transposeOn(int transposition);
+    void transposeOff();
     void clearFlags();
     
     /////////////////////////////////////////////  Don't use these unless
     ////    Automation-oriented functions    ////  You're using the
     /////////////////////////////////////////////  SquareSynth governor!
-    void _recievetempo(int tempoVal); // Don't use this! Ever! Unless you want some crazy prog stuff!
+    void _recievetempo(unsigned long tempoVal); // Don't use this! Ever! Unless you want some crazy prog stuff!
     void transform(int destination, int steps); // transforms current note to specified note, spanning x many steps (16th notes)
     void addDepth(int duty=15, int steps=1); // bends the duty cycle briefly, starting at specified duty and ending at original; spanning x many steps (16th notes)
+    void autoKill(int steps=1, bool killArpeggio=false, bool killClip=false); // kills note after specified number of steps. the boolean arguments are used in some of the drum synth functions.
+    void clip(int percent, int steps); // cuts out a percentage of the waveforms to make the sound more jagged.
+    void noClip(); // stops clipping.
     
     ////////////////////////////////////////////////
     // High-level routines (instruments & stuff!) //
@@ -87,16 +94,17 @@ class Synth_Class {
     
     
     // Drumkit commands:
-    void cymbal(int pitch, int decay, int steps);
-    void tom(int pitch, int decay, int steps);
-    void kick(int pitch, int decay, int steps);
-    void hihat(int pitch, int decay, int steps);
-    void hihatOpen(int pitch, int decay, int steps);
-    void snare(int pitch, int decay, int steps);
+    void cymbal(int pitch=60, int decay=4, int steps=4);
+    void tom(int pitch=60, int decay=4, int steps=3);
+    void kick(int pitch=36, int decay=3, int steps=1);
+    void hihat(int pitch=80, int decay=1, int steps=1);
+    void hihatOpen(int pitch=60, int decay=4, int steps=4);
+    void snare(int pitch=60, int decay=4, int steps=1);
     
   private:
     bool _noise; // noise mode flag
     bool _high; // speed optimization. no need to write HIGH when it's already on!
+    int _transposition; // stores amount of semitones to transpose by.
     int _arpeggio[MAX_ARPEGGIO+1]; // checker for arpeggio values
     int _arpeggioCount; // amount of notes to arpeggiate, also serves as flag.
     int _arpeggioTrack; // keeps track of arpeg. cycling in generate()
@@ -115,19 +123,33 @@ class Synth_Class {
     ////    Automation-oriented variables    ////
     /////////////////////////////////////////////
     unsigned long _tempo; // tempo in millis, passed here from SquareSynth governor.
+    
     // transform function vars:
     int _transDestinationNote; // Stores note to transform to.
-    unsigned long _transDestinationFreq; // Stores frequency (truncated *0.01) to save calculation.
+    unsigned long _transDestinationFreq; // Stores frequency (truncated *0.01) to save time in generate().
     unsigned long _transInterval; // transformation interval in microseconds.
     unsigned long _transStart; // time transform was called. (in micros)
-    bool _transform; // transform mode flag
+    bool _transform; // transform flag.
     // end of transform vars.
+    
     // addDepth vars:
-    int _depthArgument;
-    unsigned long _depthInterval;
-    unsigned long _depthStart;
-    bool _addDepth;
+    int _depthArgument; // stores the duty cycle to bend from.
+    unsigned long _depthInterval; // how long the bend will take in microseconds.
+    unsigned long _depthStart; // when the bend starts (for reference)
+    bool _addDepth; // addDepth flag.
     // end of addDepth vars.
+    
+    // autoKill vars:
+    bool _autoKill; // autoKill flag.
+    bool _killArpeggio; // kill arpeggio too?
+    bool _killClip; // kill clipping too?
+    unsigned long _autoKillDelay; // delay until note is killed
+    unsigned long _autoKillTrigger; // stores the time of triggering.
+    // end of autoKill vars.
+    
+    // clip vars:
+    bool _clip;
+    // end of clip vars.
     
 };
 
