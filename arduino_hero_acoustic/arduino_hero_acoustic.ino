@@ -2,9 +2,6 @@
 
 // the 'd' (DOWN) and 'u' (UP) variables refer to the start and select buttons.
 
-// WHAMMY BAR COMING SOON
-// I have to finish SquareSynth first.
-
 // edit these defines to customize your guitar's capabilities!
 
 // where the octave MUST be between 0 and 10:
@@ -77,7 +74,7 @@ void loop() {
     tick*=(-1);
     checkInput(); // input tracker
     checkKeyLocks(); // Most of the work is done here.
-    //whammyCheck(); // Runs a check on the whammy bar.
+    whammyCheck(); // Runs a check on the whammy bar.
     timer=mils;
   }
   Synth.generate();
