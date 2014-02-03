@@ -74,7 +74,7 @@ void loop() {
     tick*=(-1);
     checkInput(); // input tracker
     checkKeyLocks(); // Most of the work is done here.
-    whammyCheck(); // Runs a check on the whammy bar.
+    //whammyCheck(); // Runs a check on the whammy bar.
     timer=mils;
   }
   Synth.generate();
