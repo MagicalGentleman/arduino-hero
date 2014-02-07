@@ -6,9 +6,9 @@
 
 // where the octave MUST be between 0 and 10:
 #define INIT_OCTAVE 4
-#define MIN_OCTAVE 3
+#define MIN_OCTAVE 2
 #define MAX_OCTAVE 6
-// usable range of 3 to 6 (plus 2/3)
+// usable range of 2 to 6 (plus 2/3)
 
 #define DEFAULT_DUTY_CYCLE 40 // Sets the duty cycle you play your notes at.
 
@@ -41,12 +41,18 @@ int duty;
 boolean g[3],r[3],y[3],b[3],o[3],s[3],u[3],d[3];
 boolean c;
 
+boolean toggle=false;
+boolean toggled=false;
+boolean slide=false;
+boolean noisy=false;
 boolean sD; // Strum direction. up=true, down=false.
 boolean cLift=false;
 boolean drop=false;
 boolean silent=true;
-
+boolean hammerOn=false;
 boolean skip=false;
+
+int pitchMem=60;
 
 byte octave=4;
 int tick=1;
@@ -83,31 +89,41 @@ void loop() {
 //---------------------------------------------------------------
 
 void checkKeyLocks() {
+  if(UP&&DOWN) toggle=true;
+  else toggle=false;
+  
   if((u[2]!=u[1])&&(!UP)){       //the instant select is lifted
     if(DOWN){                  //if start is held down
-      c=(!c);               // toggle chord mode
-      if(!c) cLift=true;
-      skip=true;
+      liftRoutine();
     }
     else if(skip) skip=false;
     else if(octave<(MAX_OCTAVE-1)) octave++;
   }
+  
   else if((d[2]!=d[1])&&(!DOWN)){  //the instant start is lifted
     if(UP){                  //if select is held down
-      c=(!c);               // toggle chord mode
-      if(!c) cLift=true;
-      skip=true;
+      liftRoutine();
     }
     else if(skip) skip=false;
     else if(octave>MIN_OCTAVE) octave--;
   }
+  
   else if((s[1]!=s[2])&&STRUM){ // check for strum
-    if(!c) play(); //new note
-    else if(c) chord(sD);
+    if(toggle){
+      if(!sD) noisy=!noisy;
+      if(sD) slide=!slide;
+      toggled=true;
+    }
+    else {
+      if(!c) play(); //new note
+      else if(c) chord(sD);
+    }
   }
+  
   else if((g[2]!=g[1])||(r[2]!=r[1])||(y[2]!=y[1])||(b[2]!=b[1])||(o[2]!=o[1])) if(!silent){ // have the frets changed?
     if(!STRUM) killNote(); //if frets change and strum isn't depressed, kill the note.
     else if(!((!GREEN)&&(!RED)&&(!YELLOW)&&(!BLUE)&&(!ORANGE))){
+      hammerOn=true;
       if(!c) play(); // hammer-on!
       else if(c) chord(sD);
     }
@@ -122,5 +138,15 @@ void whammyCheck(){
   int wham=constrain(analogRead(whammy),19,401);
   if(wham>400 || wham<20) return;
   else Synth.pitchBend(map(wham,20,400,-1000,0));
+  return;
+}
+
+void liftRoutine(){
+  if(!toggled){
+    c=(!c);               // toggle chord mode
+    if(!c) cLift=true;
+  }
+  toggled=false;
+  skip=true;
   return;
 }

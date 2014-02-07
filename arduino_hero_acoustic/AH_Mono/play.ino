@@ -1,8 +1,7 @@
 void chord(boolean mode) {
   if(!mode) Synth.arpeggioOn(4,7); // major chord
   else Synth.arpeggioOn(2,5); // minor chord
-  Synth.note(frets(GREEN,RED,YELLOW,BLUE,ORANGE,octave),DEFAULT_DUTY_CYCLE,20);
-  silent=false;
+  play();
   return;
 }
 
@@ -11,7 +10,17 @@ void play() {
     Synth.arpeggioOff();
     cLift=false;
   }
-  Synth.note(frets(GREEN,RED,YELLOW,BLUE,ORANGE,octave),DEFAULT_DUTY_CYCLE,20);
+  int pitch=frets(GREEN,RED,YELLOW,BLUE,ORANGE,octave);
+  int swapSpace;
+  if(slide&&hammerOn){
+    Synth.transform(pitch,2);
+    swapSpace=pitch;
+    pitch=pitchMem;
+    pitchMem=swapSpace;
+  }
+  else pitchMem=pitch;
+  if(noisy)Synth.noise(pitch);
+  else Synth.note(pitch,DEFAULT_DUTY_CYCLE,20,2);
   silent=false;
   return;
 }

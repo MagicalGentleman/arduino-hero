@@ -113,104 +113,121 @@ void Synth_Class::begin(int pin){
 
 void Synth_Class::generate(){
   if(!_microWavelength) return; // setting the wavelength to 0 will stop the wave.
-  else {
-    unsigned long timeNow=micros();
-    _microTimerDuty=timeNow-_microTimerWave; // keeps track of exact point of duty cycle
-    if(_microTimerDuty<=_microWavelength*(1-_volatileDuty)) {
-    // WE INTERRUPT THIS PROGRAM FOR AN IMPORTANT ANNOUNCEMENT!
-      // the duty cycle is actually reversed here.(e.g. --_ = _-- and -__ = __-)
-      // The reason for this is that I want to leave the flag
-      // calculation to run during the dead (LOW) space of the wave.
-      // Since most users use the % range of 0 to 50, Calculating
-      // the flagged functions may eat into the time specified by
-      // that duty cycle, extending it and returning the wrong sound.
-      // Also, calculating inbetween each waveform would just lower
-      // the frequency depending on how long it takes to resolve the
-      // flagged items.
-      // So, calculating while the wave is LOW would be most efficient
-      // since statistically, the time spent on LOW will be longer
-      // than HIGH anyways.
-      // If you're too purist, just remove the 1- in (1-_volatileDuty)
-      // to change it back to a non-reversed duty cycle!
-    // AND BACK TO THE SHOW!
-      if(!_high) { // this is actually second
-        digitalWrite(_pin, HIGH);
-        _high=true;
-      }
+  /*if(_clip){
+    if(_clipInterval){
+      if(timeNow-_clipStart>=_clipInterval) _clip=false;
     }
-    else{ // this is actally first
-      if(_high) {
-        digitalWrite(_pin, LOW);
-        _high=false;
-      }
-      if(_microTimerDuty>=_microWavelength) { // this runs at the end of each cycle.
-        _microTimerWave=timeNow; // when duty completes, reset wave timer
-        digitalWrite(_pin, LOW); // this fixes problems with signal stretching while flags are being resolved!
-        _high=false;
-        
-        // are any flags set?
-        
-        // Kill/Clip flags:
-        
-        // autoKill first, so other functions can be skipped.
-        if(_autoKill){
-          if(timeNow-_autoKillTrigger>_autoKillDelay){ // if delay time is reached, kill that thang!
-            if(_killArpeggio) arpeggioOff();
-            if(_killClip) _clip=false;
-            noteOff();
-            return;
-          }
-        }
-        
-        // Duty cycle flags:
-        // Deals with _volatileDuty, to preserve the last user-defined duty cycle (_dutyCycle)
-        
-        // noise generation shouldn't affect the other flagged functions, so it's up here.
-        if(_noise) _volatileDuty=random(_minDuty,_maxDuty)*0.01; // alter next duty cycle for pseudo-noise
-        
-        else if(_addDepth){ // condensing with else, as these two flags shouldn't run at the same time anyways.
-          unsigned long depthMap=(timeNow-_depthStart)*0.1; // this is truncated so it works with map.
-          if(depthMap<=_depthInterval) _volatileDuty=0.01*map(depthMap,0,_depthInterval,_depthArgument,(_dutyCycle*100));
-          else {
-            _volatileDuty=_dutyCycle;
-            _addDepth=false;
-          }
-        }
-        
-        // Frequency altering flags:
-        // the following deal with _volatileNote and altering the wavelength:
-        
-        // as arpeggio calls a new note from the start, it should resolve first.
-        if(_arpeggioCount){
-          _volatileNote=_note+_arpeggio[_arpeggioTrack]; // _volatileNote is assigned the value, so transform works correctly. (if flagged)
-          _microWavelength=_midiMap[_volatileNote+_transposition];
-          if(_arpeggioTrack>=_arpeggioCount) _arpeggioTrack=0;
-          else _arpeggioTrack++;
-        }
-        
-        // transform should resolve last, as it needs a final note value to alter.
-        if(_transform) {
-          unsigned long transMap=(timeNow-_transStart)*0.1;
-          if(transMap<=_transInterval) _microWavelength=10*map(transMap,0,_transInterval,(_midiMap[_volatileNote+_transposition])*0.1,_transDestinationFreq);
-          else {// transform complete, assign new note and make sure it's the right one!
-            _note=_volatileNote=_transDestinationNote;
-            _microWavelength=_midiMap[_note+_transposition];
-            _transform=false;
-          }
-        }
-        
-        // end of flag chunks.
-      }
+    if(_clipCount<100) _clipCount++;
+    else _clipCount=0;
+    if(_clipCount<_clipPercent) return;
+  }*/
+  unsigned long timeNow=micros();
+  _microTimerDuty=timeNow-_microTimerWave; // keeps track of exact point of duty cycle
+  if(_microTimerDuty<=_microWavelength*(1-_volatileDuty)) {
+  // WE INTERRUPT THIS PROGRAM FOR AN IMPORTANT ANNOUNCEMENT!
+    // the duty cycle is actually reversed here.(e.g. --_ = _-- and -__ = __-)
+    // The reason for this is that I want to leave the flag
+    // calculation to run during the dead (LOW) space of the wave.
+    // Since most users use the % range of 0 to 50, Calculating
+    // the flagged functions may eat into the time specified by
+    // that duty cycle, extending it and returning the wrong sound.
+    // Also, calculating inbetween each waveform would just lower
+    // the frequency depending on how long it takes to resolve the
+    // flagged items.
+    // So, calculating while the wave is LOW would be most efficient
+    // since statistically, the time spent on LOW will be longer
+    // than HIGH anyways.
+    // If you're too purist, just remove the 1- in (1-_volatileDuty)
+    // to change it back to a non-reversed duty cycle!
+    // (minor tweaking may also be required concerning the pin toggling and clip flags.)
+  // AND BACK TO THE SHOW!
+    if(!_high) { // this is actually second
+      digitalWrite(_pin, HIGH);
+      _high=true;
     }
   }
-  return;
+  else{ // this is actally first
+    if(_high) {
+      digitalWrite(_pin, LOW);
+      _high=false;
+    }
+    if(_microTimerDuty>=_microWavelength) { // this runs at the end of each cycle.
+      _microTimerWave=timeNow; // when duty completes, reset wave timer
+      digitalWrite(_pin, LOW); // this fixes problems with signal stretching while flags are being resolved!
+      _high=false;
+      
+      // are any flags set?
+      
+      // Kill/Clip flags:
+      
+      // autoKill first, so other functions can be skipped.
+      if(_autoKill){
+        if(timeNow-_autoKillStart>_autoKillDelay){ // if delay time is reached, kill that thang!
+          if(_killArpeggio) arpeggioOff();
+          if(_killFreqNoise) _freqNoise=false;
+          noteOff();
+          return;
+        }
+      }
+      
+      // Duty cycle flags:
+      // Deals with _volatileDuty, to preserve the last user-defined duty cycle (_dutyCycle)
+      
+      // noise generation shouldn't affect the other flagged functions, so it's up here.
+      if(_noise) _volatileDuty=random(_minDuty,_maxDuty)*0.01; // alter next duty cycle for pseudo-noise
+      
+      else if(_addDepth){ // condensing with else, as these two flags shouldn't run at the same time anyways.
+        unsigned long depthMap=(timeNow-_depthStart)*0.1; // this is truncated so it works with map.
+        if(depthMap<=_depthInterval) _volatileDuty=0.01*map(depthMap,0,_depthInterval,_depthArgument,(_dutyCycle*100));
+        else {
+          _volatileDuty=_dutyCycle;
+          _addDepth=false;
+        }
+      }
+      
+      // Frequency altering flags:
+      // the following deal with _volatileNote and altering the wavelength:
+      
+      // as arpeggio calls a new note from the start, it should resolve first.
+      if(_arpeggioCount){
+        _volatileNote=_note+_arpeggio[_arpeggioTrack]; // _volatileNote is assigned the value, so transform works correctly. (if flagged)
+        _microWavelength=_midiMap[_volatileNote+_transposition];
+        if(_arpeggioTrack>=_arpeggioCount) _arpeggioTrack=0;
+        else _arpeggioTrack++;
+      }
+      
+      // transform should resolve last, as it needs a final note value to alter.
+      if(_transform) {
+        unsigned long transMap=(timeNow-_transStart)*0.1;
+        if(transMap<=_transInterval) {
+          if(_freqNoise) _freqBaseNote=map(transMap,0,_transInterval,_volatileNote+_transposition,_transDestinationNote);
+          else _microWavelength=10*map(transMap,0,_transInterval,_midiMap[_volatileNote+_transposition]*0.1,_transDestinationFreq);
+        }
+        else {// transform complete, assign new note and make sure it's the right one!
+          _note=_volatileNote=_transDestinationNote;
+          _microWavelength=_midiMap[_note+_transposition];
+          _transform=false;
+        }
+      }
+      
+      // frequency noise at the end.
+      if(_freqNoise){
+        if(!_transform) _freqBaseNote=_volatileNote;
+        _microWavelength=10*random(_midiMap[_freqBaseNote-_freqNegMod]*0.1, _midiMap[_freqBaseNote+_freqPosMod]*0.1);
+      }
+      
+      // end of flag chunks.
+    }
+  }
+return;
 }
 
 void Synth_Class::noteOn(int pitch, int duty){
-  _note=_volatileNote=pitch+_transposition;
+  _note=_volatileNote=pitch;
   if(duty) dutyCycle(duty);
   _microWavelength=_midiMap[pitch+_transposition];
   _autoKill=false;
+  _freqNoise=false;
   return;
 }
 
@@ -236,6 +253,21 @@ void Synth_Class::addDepth(int duty, int steps){
   _addDepth=true;
   return;
 }
+
+/*
+void Synth_Class::clip(int percent, int steps){
+  _clipCount=0;
+  _clipPercent=percent;
+  _clipInterval=steps*_tempo;
+  _clipStart=micros();
+  _clip=true;
+  return;
+}
+
+void Synth_Class::clipOff(){
+  _clip=false;
+}
+*/
 
 void Synth_Class::arpeggioOn(int offset1, int offset2, int offset3, int offset4){
   // Messy, but efficient.
@@ -292,6 +324,16 @@ void Synth_Class::noise(int pitch, int minDuty, int maxDuty){
   return;
 }
 
+void Synth_Class::frequencyNoise(int pitch, int negMod, int posMod){
+  _volatileNote=_note=pitch;
+  _microWavelength=_midiMap[_volatileNote+_transposition];
+  _freqNegMod=negMod;
+  _freqPosMod=posMod;
+  _freqNoise=true;
+  _autoKill=false;
+  return;
+}
+
 void Synth_Class::noteOff(){
   _microWavelength=0;
   digitalWrite(_pin,LOW); // save power, leds will change properly.
@@ -304,18 +346,21 @@ void Synth_Class::clearFlags(){
   _transform=false;
   _addDepth=false;
   _noise=false;
-  _clip=false;
+  //_clip=false;
+  //_clipCount=0;
+  //_clipInterval=0;
   _autoKill=false;
   _transposition=0;
+  _freqNoise=false;
   arpeggioOff();
   return;
 }
 
-void Synth_Class::autoKill(int steps, bool killArpeggio, bool killClip){
-  _autoKillTrigger=micros();
+void Synth_Class::autoKill(int steps, bool killArpeggio, bool killFreqNoise){
+  _autoKillStart=micros();
   _autoKillDelay=steps*_tempo;
   _killArpeggio=killArpeggio;
-  _killClip=killClip;
+  _killFreqNoise=killFreqNoise;
   _autoKill=true;
   return;
 }
@@ -348,9 +393,11 @@ void Synth_Class::note(int pitch, int duty, int depth, int steps){
 // Drumkit commands:
 
 void Synth_Class::cymbal(int pitch, int decay, int steps){
-  noise(pitch);
-  transform(pitch-decay,steps);
-  
+  //noise(pitch);
+  frequencyNoise(pitch);
+  //arpeggioOn(-4,-2,2,3);
+  //transform(pitch-decay,steps);
+  autoKill(steps+10);
   return;
 }
 
