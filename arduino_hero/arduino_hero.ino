@@ -48,8 +48,11 @@ boolean c;
 
 boolean sD; // Strum direction. up=true, down=false.
 boolean cLift=false;
+boolean cMode=0;
 boolean drop=false;
 boolean silent=true;
+boolean toggle=false;
+boolean toggled=false;
 
 boolean skip=false;
 
@@ -90,41 +93,58 @@ void loop() {
 }
 
 void checkKeyLocks() {
+  if(UP&&DOWN) toggle=true;
+  else toggle=false;
+  
   if((u[2]!=u[1])&&(!UP)){       //the instant select is lifted
     if(DOWN){                  //if start is held down
-      c=(!c);               // toggle chord mode
-      if(!c) cLift=true;
-      skip=true;
+      liftRoutine();
     }
     else if(skip) skip=false;
     else if(octave<(MAX_OCTAVE-1)) octave++;
   }
+  
   else if((d[2]!=d[1])&&(!DOWN)){  //the instant start is lifted
     if(UP){                  //if select is held down
-      c=(!c);               // toggle chord mode
-      if(!c) cLift=true;
-      skip=true;
+      liftRoutine();
     }
     else if(skip) skip=false;
     else if(octave>MIN_OCTAVE) octave--;
   }
   else if((s[1]!=s[2])&&STRUM){ // check for strum
-    velocity=127;
-    if(!c) play(0,0,velocity); //new note
-    else if(c) chord(sD);
+    if(toggle){
+        if(!sD) cMode=1;
+        if(sD) cMode=0;
+        toggled=true;
+      }
+    else {
+      velocity=127;
+      if(!c) play(0,0,velocity); //new note
+      else if(c) chord(cMode);
+    }
   }
   else if((g[2]!=g[1])||(r[2]!=r[1])||(y[2]!=y[1])||(b[2]!=b[1])||(o[2]!=o[1])) if(!silent){ // have the frets changed?
     if(!STRUM) killNote(); //if frets change and strum isn't depressed, kill the note.
     else if(!((!GREEN)&&(!RED)&&(!YELLOW)&&(!BLUE)&&(!ORANGE))){
-      velocity-=1; // comment this line out to remove velocity reduction during hammer-ons
+      //velocity-=1; // comment this line out to remove velocity reduction during hammer-ons
       if(velocity<0) velocity=0;
       if(!c) play(0,0,velocity); //otherwise hammer-on with reduced velocity
-      else if(c) chord(sD);
+      else if(c) chord(cMode);
     }
     else{
       if(c) drop=true;
       play(0,0,int(velocity/2));
     }
   }
+  return;
+}
+
+void liftRoutine(){
+  if(!toggled){
+    c=(!c);               // toggle chord mode
+    if(!c) cLift=true;
+  }
+  toggled=false;
+  skip=true;
   return;
 }

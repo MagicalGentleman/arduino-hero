@@ -1,6 +1,6 @@
 void checkInput() {
   int x;
-  if(tick>0) x=1;
+  if(tick) x=1;
   else x=2;
   if(digitalRead(green)==LOW) g[0]=g[x]=true;
   else g[0]=g[x]=false;

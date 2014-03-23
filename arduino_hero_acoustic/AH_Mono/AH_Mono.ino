@@ -10,7 +10,8 @@
 #define MAX_OCTAVE 6
 // usable range of 2 to 6 (plus 2/3)
 
-#define DEFAULT_DUTY_CYCLE 40 // Sets the duty cycle you play your notes at.
+#define CLEAN_DUTY_CYCLE 50 // Sets the duty cycle you play your clean notes at.
+#define DIRTY_DUTY_CYCLE 20 // Sets the duty cycle you play dirty notes at.
 
 // DON'T CHANGE THESE DEFINES!-----------------
 #define GREEN g[0]
@@ -35,7 +36,7 @@ const int select=8;
 const int strumD=9;
 const int strumU=10;
 
-int duty;
+int duty[2];
 
 //GREEN,RED,YELLOW,BLUE,ORANGE,STRUM,(UP/SELECT),(DOWN/START),CHORD//
 boolean g[3],r[3],y[3],b[3],o[3],s[3],u[3],d[3];
@@ -44,7 +45,7 @@ boolean c;
 boolean toggle=false;
 boolean toggled=false;
 boolean slide=false;
-boolean noisy=false;
+boolean dutyBool=false;
 boolean sD; // Strum direction. up=true, down=false.
 boolean cLift=false;
 boolean drop=false;
@@ -53,14 +54,16 @@ boolean hammerOn=false;
 boolean skip=false;
 
 int pitchMem=60;
+int noteGap=0;
 
 byte octave=4;
-int tick=1;
+bool tick=true;
 unsigned long timer;
 unsigned long mils;
 
 void setup() {
   Synth.begin(11); // SquareSynth declares the pin output for you.
+  Synth._recievetempo(50000); // setting 50 milliseconds per step, for automation. (dealt with as 50 millis per 32nd note, 150bpm)
   pinMode(green, INPUT);
   pinMode(red, INPUT);
   pinMode(yellow, INPUT);
@@ -70,6 +73,8 @@ void setup() {
   pinMode(strumU, INPUT);
   pinMode(start, INPUT);
   pinMode(select, INPUT);
+  duty[0]=CLEAN_DUTY_CYCLE;
+  duty[1]=DIRTY_DUTY_CYCLE;
   for(int i=0; i<3; i++) g[i]=r[i]=y[i]=b[i]=o[i]=u[i]=d[i]=s[i]=false;
   timer=millis();
 }
@@ -77,11 +82,12 @@ void setup() {
 void loop() {
   mils=millis();
   if((mils-timer)>2) {
-    tick*=(-1);
+    tick=!tick;
     checkInput(); // input tracker
     checkKeyLocks(); // Most of the work is done here.
     //whammyCheck(); // Runs a check on the whammy bar.
     timer=mils;
+    noteGap++;
   }
   Synth.generate();
 }
@@ -110,7 +116,7 @@ void checkKeyLocks() {
   
   else if((s[1]!=s[2])&&STRUM){ // check for strum
     if(toggle){
-      if(!sD) noisy=!noisy;
+      if(!sD) dutyBool=!dutyBool;
       if(sD) slide=!slide;
       toggled=true;
     }
@@ -128,19 +134,20 @@ void checkKeyLocks() {
       else if(c) chord(sD);
     }
     else{
+      hammerOn=true;
       play(); // keep this here if you want pullups to go with your hammer-ons
     }
   }
   return;
 }
-
+/*
 void whammyCheck(){
   int wham=constrain(analogRead(whammy),19,401);
   if(wham>400 || wham<20) return;
   else Synth.pitchBend(map(wham,20,400,-1000,0));
   return;
 }
-
+*/
 void liftRoutine(){
   if(!toggled){
     c=(!c);               // toggle chord mode

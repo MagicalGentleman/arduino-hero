@@ -73,6 +73,7 @@ class Synth_Class {
     void transposeOn(int transposition);
     void transposeOff();
     void clearFlags();
+    void softKill(int steps=2);
     
     /////////////////////////////////////////////  Don't use these unless
     ////    Automation-oriented functions    ////  You're using the

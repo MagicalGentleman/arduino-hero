@@ -173,10 +173,7 @@ void Synth_Class::generate(){
       // Duty cycle flags:
       // Deals with _volatileDuty, to preserve the last user-defined duty cycle (_dutyCycle)
       
-      // noise generation shouldn't affect the other flagged functions, so it's up here.
-      if(_noise) _volatileDuty=random(_minDuty,_maxDuty)*0.01; // alter next duty cycle for pseudo-noise
-      
-      else if(_addDepth){ // condensing with else, as these two flags shouldn't run at the same time anyways.
+      if(_addDepth){ // condensing with else, as these two flags shouldn't run at the same time anyways.
         unsigned long depthMap=(timeNow-_depthStart)*0.1; // this is truncated so it works with map.
         if(depthMap<=_depthInterval) _volatileDuty=0.01*map(depthMap,0,_depthInterval,_depthArgument,(_dutyCycle*100));
         else {
@@ -184,6 +181,9 @@ void Synth_Class::generate(){
           _addDepth=false;
         }
       }
+      
+      // noise generation shouldn't affect the other flagged functions, so it's up here.
+      else if(_noise) _volatileDuty=random(_minDuty,_maxDuty)*0.01; // alter next duty cycle for pseudo-noise
       
       // Frequency altering flags:
       // the following deal with _volatileNote and altering the wavelength:
@@ -383,6 +383,12 @@ void Synth_Class::note(int pitch, int duty, int depth, int steps){
   return;
 }
 
+void Synth_Class::softKill(int steps){
+  addDepth(_dutyCycle,steps);
+  _dutyCycle=_volatileDuty=0;
+  autoKill(steps);
+  return;
+}
 
 
 // Instrument commands:
