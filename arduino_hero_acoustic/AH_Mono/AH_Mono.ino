@@ -56,7 +56,7 @@ boolean skip=false;
 int pitchMem=60;
 int noteGap=0;
 
-byte octave=4;
+byte octave=3;
 bool tick=true;
 unsigned long timer;
 unsigned long mils;
@@ -73,11 +73,12 @@ void setup() {
   pinMode(strumU, INPUT);
   pinMode(start, INPUT);
   pinMode(select, INPUT);
+  Synth.transposeOn(4);
   if(digitalRead(start) == LOW){
-    Synth.transposeOn(4);
+    Synth.transposeOff();
   }
   else if(digitalRead(select) == LOW){
-    Synth.transposeOn(4);
+    Synth.transposeOff();
   }
   duty[0]=CLEAN_DUTY_CYCLE;
   duty[1]=DIRTY_DUTY_CYCLE;
