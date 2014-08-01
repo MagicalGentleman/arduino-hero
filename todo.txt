@@ -1,2 +1,1 @@
-QC and speed improvements at the moment.
-Acoustic mode coming soon!
+Code for tone generation must be as lightweight as possible.
