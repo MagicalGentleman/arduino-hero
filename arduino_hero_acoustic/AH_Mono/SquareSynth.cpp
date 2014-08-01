@@ -213,7 +213,7 @@ void Synth_Class::generate(){
       // frequency noise at the end.
       if(_freqNoise){
         if(!_transform) _freqBaseNote=_volatileNote;
-        _microWavelength=10*random(_midiMap[_freqBaseNote-_freqNegMod]*0.1, _midiMap[_freqBaseNote+_freqPosMod]*0.1);
+        _microWavelength=10*random(_midiMap[_freqBaseNote+_freqMod]*0.1, _midiMap[_freqBaseNote-_freqMod]*0.1);
       }
       
       // end of flag chunks.
@@ -324,13 +324,9 @@ void Synth_Class::noise(int pitch, int minDuty, int maxDuty){
   return;
 }
 
-void Synth_Class::frequencyNoise(int pitch, int negMod, int posMod){
-  _volatileNote=_note=pitch;
-  _microWavelength=_midiMap[_volatileNote+_transposition];
-  _freqNegMod=negMod;
-  _freqPosMod=posMod;
+void Synth_Class::frequencyNoise(int mod){
+  _freqMod=mod;
   _freqNoise=true;
-  _autoKill=false;
   return;
 }
 
@@ -399,11 +395,11 @@ void Synth_Class::softKill(int steps){
 // Drumkit commands:
 
 void Synth_Class::cymbal(int pitch, int decay, int steps){
-  //noise(pitch);
-  frequencyNoise(pitch);
+  noise(pitch, 20, 40);
+  frequencyNoise();
   //arpeggioOn(-4,-2,2,3);
-  //transform(pitch-decay,steps);
-  autoKill(steps+10);
+  transform(pitch-decay,steps);
+  autoKill(steps+10, true, true);
   return;
 }
 

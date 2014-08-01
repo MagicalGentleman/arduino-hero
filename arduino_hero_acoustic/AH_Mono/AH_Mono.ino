@@ -73,6 +73,12 @@ void setup() {
   pinMode(strumU, INPUT);
   pinMode(start, INPUT);
   pinMode(select, INPUT);
+  if(digitalRead(start) == LOW){
+    Synth.transposeOn(4);
+  }
+  else if(digitalRead(select) == LOW){
+    Synth.transposeOn(4);
+  }
   duty[0]=CLEAN_DUTY_CYCLE;
   duty[1]=DIRTY_DUTY_CYCLE;
   for(int i=0; i<3; i++) g[i]=r[i]=y[i]=b[i]=o[i]=u[i]=d[i]=s[i]=false;

@@ -68,7 +68,7 @@ class Synth_Class {
     void arpeggioOff();
     void dutyCycle(int percent);
     void noise(int pitch=60, int minDuty=1, int maxDuty=51);
-    void frequencyNoise(int pitch=60, int negMod=15, int posMod=15); // generates a random freqency, compared to the current note.
+    void frequencyNoise(int mod=4); // generates a random freqency, compared to the current note.
     void noteOff();
     void transposeOn(int transposition);
     void transposeOff();
@@ -96,7 +96,7 @@ class Synth_Class {
     
     
     // Drumkit commands:
-    void cymbal(int pitch=80, int decay=6, int steps=1);
+    void cymbal(int pitch=80, int decay=8, int steps=2);
     void tom(int pitch=60, int decay=4, int steps=3);
     void kick(int pitch=36, int decay=3, int steps=1);
     void hihat(int pitch=70, int decay=1, int steps=1);
@@ -118,8 +118,7 @@ class Synth_Class {
     float _volatileDuty; // duty cycle used in generate(). can be changed by automation flags.
     int _minDuty; // optional paramaters for the noise generator
     int _maxDuty; //-^
-    int _freqNegMod;
-    int _freqPosMod;
+    int _freqMod;
     int _freqBaseNote; // the midi note sample referenced during generate for frequency noise.
     unsigned long _microWavelength; // stores wavelength in microseconds
     unsigned long _microTimerWave; // wavelength timer
