@@ -6,85 +6,8 @@
 //       functions are at the bottom!
 //       e.g. instrument blueprints, realistic notes, etc.
 
-///////////////////////////////////////////////////////////////
-////             Instance government code here             ////
-///////////////////////////////////////////////////////////////
-SquareSynth_Class SquareSynth;
-Synth_Class *Channel;
 Synth_Class Synth;
 
-SquareSynth_Class::SquareSynth_Class(){
-  // nada.
-}
-
-SquareSynth_Class::~SquareSynth_Class(){
-  // zilch.
-}
-
-void SquareSynth_Class::begin(int synths, ...){
-  Synth.~Synth_Class(); // remove single version of object, as not being used.
-  _tempo=62500; // initial tempo is 120bpm. (this is in micros per 32nd note)
-  _synthCount=synths;
-  Channel = new Synth_Class [synths]; // allocate array at specified size.
-  
-  va_list pins; // the va_ macro functions are the handlers for unknown arguments. look them up.
-  va_start(pins, synths); // pins= the unknown arguments, synths= the number of arguments (specified by user)
-  
-  int pinValue;
-  for(int i=0; i<synths; i++) {
-    pinValue = va_arg(pins, int); // case of the value to be returned must be specified!
-    Channel[i].begin(pinValue); // it all goes straight to global, so doesn't destroy at end of function!
-    Channel[i]._recievetempo(_tempo);
-  }
-  
-  va_end(pins);
-  return;
-}
-///////////////////////////////////////////////////////////////
-////                    Timing code here                   ////
-///////////////////////////////////////////////////////////////
-
-void SquareSynth_Class::tempo(int bpm){
-  _tempo=60000000/(bpm*8); // value in millis for a sixteenth note.
-  for(int i=0; i<_synthCount; i++) Channel[i]._recievetempo(_tempo);
-  return;
-}
-
-void SquareSynth_Class::proceed(int modifier){
-  unsigned long tempoTimer=micros();
-  unsigned long period=_tempo*modifier;
-  while(micros()-tempoTimer<=period){
-    for(int i=0; i<_synthCount; i++) Channel[i].generate();
-  }
-  return;
-}
-//----some shortcut routines----//
-void SquareSynth_Class::sixteenth(){
-  proceed(2);
-  return;
-}
-void SquareSynth_Class::eighth(){
-  proceed(4);
-  return;
-}
-void SquareSynth_Class::quarter(){
-  proceed(8);
-  return;
-}
-void SquareSynth_Class::half(){
-  proceed(16);
-  return;
-}
-void SquareSynth_Class::whole(){
-  proceed(32);
-  return;
-}
-//------------------------------//
-
-void SquareSynth_Class::generate(){
-  for(int i=0; i<_synthCount; i++) Channel[i].generate();
-  return;
-}
 
 ///////////////////////////////////////////////////////////////
 ////                  Base synth code here                 ////
@@ -107,40 +30,15 @@ void Synth_Class::begin(int pin){
   _microTimerWave=micros();
   _dutyCycle=_volatileDuty=50;
   _note=60; // default note.
-  _tempo=62500; // default tempo (120bpm)
+  _tempo=50000;
   clearFlags();
 }
 
 void Synth_Class::generate(){
   if(!_microWavelength) return; // setting the wavelength to 0 will stop the wave.
-  /*if(_clip){
-    if(_clipInterval){
-      if(timeNow-_clipStart>=_clipInterval) _clip=false;
-    }
-    if(_clipCount<100) _clipCount++;
-    else _clipCount=0;
-    if(_clipCount<_clipPercent) return;
-  }*/
   unsigned long timeNow=micros();
   _microTimerDuty=timeNow-_microTimerWave; // keeps track of exact point of duty cycle
   if(_microTimerDuty<=_microWavelength*(1-_volatileDuty)) {
-  // WE INTERRUPT THIS PROGRAM FOR AN IMPORTANT ANNOUNCEMENT!
-    // the duty cycle is actually reversed here.(e.g. --_ = _-- and -__ = __-)
-    // The reason for this is that I want to leave the flag
-    // calculation to run during the dead (LOW) space of the wave.
-    // Since most users use the % range of 0 to 50, Calculating
-    // the flagged functions may eat into the time specified by
-    // that duty cycle, extending it and returning the wrong sound.
-    // Also, calculating inbetween each waveform would just lower
-    // the frequency depending on how long it takes to resolve the
-    // flagged items.
-    // So, calculating while the wave is LOW would be most efficient
-    // since statistically, the time spent on LOW will be longer
-    // than HIGH anyways.
-    // If you're too purist, just remove the 1- in (1-_volatileDuty)
-    // to change it back to a non-reversed duty cycle!
-    // (minor tweaking may also be required concerning the pin toggling and clip flags.)
-  // AND BACK TO THE SHOW!
     if(!_high) { // this is actually second
       digitalWrite(_pin, HIGH);
       _high=true;
@@ -157,9 +55,7 @@ void Synth_Class::generate(){
       _high=false;
       
       // are any flags set?
-      
-      // Kill/Clip flags:
-      
+            
       // autoKill first, so other functions can be skipped.
       if(_autoKill){
         if(timeNow-_autoKillStart>_autoKillDelay){ // if delay time is reached, kill that thang!
@@ -201,7 +97,7 @@ void Synth_Class::generate(){
         unsigned long transMap=(timeNow-_transStart)*0.1;
         if(transMap<=_transInterval) {
           if(_freqNoise) _freqBaseNote=map(transMap,0,_transInterval,_volatileNote+_transposition,_transDestinationNote);
-          else _microWavelength=10*map(transMap,0,_transInterval,_midiMap[_volatileNote+_transposition]*0.1,_transDestinationFreq);
+          else _microWavelength=10*map(transMap,0,_transInterval,/*_midiMap[_volatileNote+_transposition]*/_microWavelength*0.1,_transDestinationFreq);
         }
         else {// transform complete, assign new note and make sure it's the right one!
           _note=_volatileNote=_transDestinationNote;
@@ -232,8 +128,9 @@ void Synth_Class::noteOn(int pitch, int duty){
 }
 
 void Synth_Class::pitchBend(int bend){
-  if(!bend) _microWavelength=_midiMap[_volatileNote+_transposition];
-  else _microWavelength=10*map(bend,-1000,1000,_midiMap[_volatileNote-2+_transposition]*0.1,_midiMap[_volatileNote+2+_transposition]*0.1);// again, some truncation for the map() function.
+  int tempNote = _volatileNote+_transposition
+  if(!bend) _microWavelength=_midiMap[tempNote];
+  else _microWavelength=10*map(bend,-1000,1000,_midiMap[tempNote-4]*0.1,_midiMap[tempNote+4]*0.1);// again, some truncation for the map() function.
   return;
 }
 
@@ -254,24 +151,8 @@ void Synth_Class::addDepth(int duty, int steps){
   return;
 }
 
-/*
-void Synth_Class::clip(int percent, int steps){
-  _clipCount=0;
-  _clipPercent=percent;
-  _clipInterval=steps*_tempo;
-  _clipStart=micros();
-  _clip=true;
-  return;
-}
-
-void Synth_Class::clipOff(){
-  _clip=false;
-}
-*/
-
 void Synth_Class::arpeggioOn(int offset1, int offset2, int offset3, int offset4){
-  // Messy, but efficient.
-  // _arpeggio[0] is void, so the base note is called at this array index.
+  // _arpeggio[0] is 0, so the base note is called at this array index.
   _arpeggio[1]=offset1;
   if(offset2) {
     _arpeggio[2]=offset2;
@@ -324,7 +205,7 @@ void Synth_Class::noise(int pitch, int minDuty, int maxDuty){
   return;
 }
 
-void Synth_Class::frequencyNoise(int mod){
+void Synth_Class::freqNoise(int mod){
   _freqMod=mod;
   _freqNoise=true;
   return;
@@ -361,12 +242,6 @@ void Synth_Class::autoKill(int steps, bool killArpeggio, bool killFreqNoise){
   return;
 }
 
-void Synth_Class::_recievetempo(unsigned long tempoVal){
-  _tempo=tempoVal;
-  return;
-}
-
-
 ///////////////////////////////////////////////////////////////
 ////               High-level routines here                ////
 ///////////////////////////////////////////////////////////////
@@ -383,56 +258,5 @@ void Synth_Class::softKill(int steps){
   addDepth(_dutyCycle,steps);
   _dutyCycle=_volatileDuty=0;
   autoKill(steps);
-  return;
-}
-
-
-// Instrument commands:
-
-
-
-
-// Drumkit commands:
-
-void Synth_Class::cymbal(int pitch, int decay, int steps){
-  noise(pitch, 20, 40);
-  frequencyNoise();
-  //arpeggioOn(-4,-2,2,3);
-  transform(pitch-decay,steps);
-  autoKill(steps+10, true, true);
-  return;
-}
-
-void Synth_Class::tom(int pitch, int decay, int steps){
-  noteOn(pitch,50);
-  transform(pitch-decay,steps);
-  autoKill(steps);
-  return;
-}
-
-void Synth_Class::kick(int pitch, int decay, int steps){
-  noteOn(pitch,50);
-  transform(pitch-decay,steps+1);
-  autoKill(steps);
-  return;
-}
-
-void Synth_Class::hihat(int pitch, int decay, int steps){
-  noise(pitch);
-  transform(pitch-decay,steps);
-  return;
-}
-
-void Synth_Class::hihatOpen(int pitch, int decay, int steps){
-  noise(pitch);
-  transform(pitch-decay, steps);
-  
-  return;
-}
-
-void Synth_Class::snare(int pitch, int decay, int steps){
-  noise(pitch);
-  transform(pitch-decay, steps);
-  
   return;
 }

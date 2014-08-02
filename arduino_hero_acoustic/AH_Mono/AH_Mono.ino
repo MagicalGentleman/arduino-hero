@@ -60,10 +60,10 @@ byte octave=3;
 bool tick=true;
 unsigned long timer;
 unsigned long mils;
+int timerDiff=2;
 
 void setup() {
   Synth.begin(11); // SquareSynth declares the pin output for you.
-  Synth._recievetempo(50000); // setting 50 milliseconds per step, for automation. (dealt with as 50 millis per 32nd note, 150bpm)
   pinMode(green, INPUT);
   pinMode(red, INPUT);
   pinMode(yellow, INPUT);
@@ -88,13 +88,13 @@ void setup() {
 
 void loop() {
   mils=millis();
-  if((mils-timer)>2) {
+  if((mils-timer)>timerDiff) {
     tick=!tick;
     checkInput(); // input tracker
     checkKeyLocks(); // Most of the work is done here.
-    //whammyCheck(); // Runs a check on the whammy bar.
+    whammyCheck(); // Runs a check on the whammy bar.
     timer=mils;
-    noteGap++;
+    noteGap+=timerDiff;
   }
   Synth.generate();
 }
@@ -147,14 +147,14 @@ void checkKeyLocks() {
   }
   return;
 }
-/*
+
 void whammyCheck(){
   int wham=constrain(analogRead(whammy),19,401);
   if(wham>400 || wham<20) return;
   else Synth.pitchBend(map(wham,20,400,-1000,0));
   return;
 }
-*/
+
 void liftRoutine(){
   if(!toggled){
     c=(!c);               // toggle chord mode

@@ -29,7 +29,7 @@ void play() {
 }
 
 void killNote() { // cuts off all notes and sets 'silent' to 'true'
-  Synth.softKill(1);
+  Synth.softKill(2);
   silent=true;
   return;
 }
