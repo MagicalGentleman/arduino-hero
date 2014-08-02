@@ -60,7 +60,7 @@ byte octave=3;
 bool tick=true;
 unsigned long timer;
 unsigned long mils;
-int timerDiff=2;
+int timerDiff=20;
 
 void setup() {
   Synth.begin(11); // SquareSynth declares the pin output for you.
@@ -92,7 +92,7 @@ void loop() {
     tick=!tick;
     checkInput(); // input tracker
     checkKeyLocks(); // Most of the work is done here.
-    whammyCheck(); // Runs a check on the whammy bar.
+    if(!silent) whammyCheck(); // Runs a check on the whammy bar.
     timer=mils;
     noteGap+=timerDiff;
   }

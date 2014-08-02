@@ -14,7 +14,7 @@ void play() {
   int pitch=frets(GREEN,RED,YELLOW,BLUE,ORANGE,octave);
   int swapSpace;
   if(slide&&hammerOn){
-    if(noteGap>150) noteGap=150;
+    if(noteGap>500) noteGap=500;
     Synth.transform(pitch,noteGap/50);
     swapSpace=pitch;
     pitch=pitchMem;
@@ -29,7 +29,7 @@ void play() {
 }
 
 void killNote() { // cuts off all notes and sets 'silent' to 'true'
-  Synth.softKill(2);
+  Synth.softKill(1);
   silent=true;
   return;
 }
