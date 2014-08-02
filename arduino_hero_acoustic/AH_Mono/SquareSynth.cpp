@@ -128,7 +128,7 @@ void Synth_Class::noteOn(int pitch, int duty){
 }
 
 void Synth_Class::pitchBend(int bend){
-  int tempNote = _volatileNote+_transposition
+  int tempNote = _volatileNote+_transposition;
   if(!bend) _microWavelength=_midiMap[tempNote];
   else _microWavelength=10*map(bend,-1000,1000,_midiMap[tempNote-4]*0.1,_midiMap[tempNote+4]*0.1);// again, some truncation for the map() function.
   return;
