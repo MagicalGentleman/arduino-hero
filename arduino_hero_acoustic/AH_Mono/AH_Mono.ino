@@ -40,11 +40,9 @@ int duty[2];
 
 //GREEN,RED,YELLOW,BLUE,ORANGE,STRUM,(UP/SELECT),(DOWN/START),CHORD//
 boolean g[3],r[3],y[3],b[3],o[3],s[3],u[3],d[3];
-boolean c;
+boolean c=false;
 
-boolean toggle=false;
-boolean toggled=false;
-boolean slide=false;
+boolean slide=true;
 boolean dutyBool=false;
 boolean sD; // Strum direction. up=true, down=false.
 boolean cLift=false;
@@ -52,6 +50,7 @@ boolean drop=false;
 boolean silent=true;
 boolean hammerOn=false;
 boolean skip=false;
+boolean ignore=false;
 
 int pitchMem=60;
 int noteGap=0;
@@ -73,13 +72,7 @@ void setup() {
   pinMode(strumU, INPUT);
   pinMode(start, INPUT);
   pinMode(select, INPUT);
-  Synth.transposeOn(4);
-  if(digitalRead(start) == LOW){
-    Synth.transposeOff();
-  }
-  else if(digitalRead(select) == LOW){
-    Synth.transposeOff();
-  }
+  
   duty[0]=CLEAN_DUTY_CYCLE;
   duty[1]=DIRTY_DUTY_CYCLE;
   for(int i=0; i<3; i++) g[i]=r[i]=y[i]=b[i]=o[i]=u[i]=d[i]=s[i]=false;
@@ -102,35 +95,39 @@ void loop() {
 //---------------------------------------------------------------
 
 void checkKeyLocks() {
-  if(UP&&DOWN) toggle=true;
-  else toggle=false;
+  if(UP&&DOWN&&!ignore) {
+    if(skip) return;
+    else liftRoutine();
+  }
+  else if(skip) skip=false;
   
   if((u[2]!=u[1])&&(!UP)){       //the instant select is lifted
-    if(DOWN){                  //if start is held down
-      liftRoutine();
+    if(DOWN){
+      ignore=true;
+      return;
     }
-    else if(skip) skip=false;
-    else if(octave<(MAX_OCTAVE-1)) octave++;
+    else if(ignore){
+      ignore=false;
+      return;
+    }
+    if(octave<(MAX_OCTAVE-1)) octave++;
   }
   
   else if((d[2]!=d[1])&&(!DOWN)){  //the instant start is lifted
-    if(UP){                  //if select is held down
-      liftRoutine();
+    if(UP){
+      ignore=true;
+      return;
     }
-    else if(skip) skip=false;
-    else if(octave>MIN_OCTAVE) octave--;
+    else if(ignore){
+      ignore=false;
+      return;
+    }
+    if(octave>MIN_OCTAVE) octave--;
   }
   
   else if((s[1]!=s[2])&&STRUM){ // check for strum
-    if(toggle){
-      if(!sD) dutyBool=!dutyBool;
-      if(sD) slide=!slide;
-      toggled=true;
-    }
-    else {
-      if(!c) play(); //new note
-      else if(c) chord(sD);
-    }
+    if(!c) play(); //new note
+    else if(c) chord(sD);
   }
   
   else if((g[2]!=g[1])||(r[2]!=r[1])||(y[2]!=y[1])||(b[2]!=b[1])||(o[2]!=o[1])) if(!silent){ // have the frets changed?
@@ -156,11 +153,9 @@ void whammyCheck(){
 }
 
 void liftRoutine(){
-  if(!toggled){
-    c=(!c);               // toggle chord mode
-    if(!c) cLift=true;
-  }
-  toggled=false;
+  slide=c;
+  c=(!c);               // toggle chord mode
+  if(!c) cLift=true;
   skip=true;
   return;
 }
